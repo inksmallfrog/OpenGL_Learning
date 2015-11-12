@@ -1,0 +1,12 @@
+#ifndef _INKSMALLFROG_WINDOW_CONFIGURE_
+#define _INKSMALLFROG_WINDOW_CONFIGURE_
+
+#ifndef WINDOW_WIDTH
+#define WINDOW_WIDTH 800
+#endif
+
+#ifndef WINDOW_HEIGHT
+#define WINDOW_HEIGHT 600
+#endif
+
+#endif
