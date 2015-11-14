@@ -28,8 +28,8 @@ Camera::Camera(Vector3f position, Vector3f up, Vector3f target) :
     m_borderDistance(60),
     m_onBorder(false),
     m_dirty(true){
-  m_up.Unitizate();
-  m_target.Unitizate();
+  m_up.Normalize();
+  m_target.Normalize();
   m_right = m_up.Cross(m_target);
 }
 
@@ -78,28 +78,24 @@ void Camera::RotateCamera(int mouseX, int mouseY){
   m_dirty = true;
 }
 
-const Vector3f& Camera::getPosition()const{
+const Vector3f& Camera::GetPosition()const{
   return m_position;
 }
 
-const Vector3f& Camera::getUp()const{
+const Vector3f& Camera::GetUp()const{
   return m_up;
 }
 
-const Vector3f& Camera::getTarget()const{
+const Vector3f& Camera::GetTarget()const{
   return m_target;
 }
 
-const float Camera::getVerticalAngle()const{
+const float Camera::GetVerticalAngle()const{
   return m_verticalAngle;
 }
 
-const float Camera::getHorizentalAngle()const{
+const float Camera::GetHorizentalAngle()const{
   return m_horizonAngle;
-}
-
-void Camera::setRightVector3(const Vector3f &right){
-  m_right = right;
 }
 
 Matrix4f Camera::GenerateMatrix(bool &outSucceed){
@@ -131,12 +127,12 @@ Matrix4f Camera::GenerateMatrix(bool &outSucceed){
   Quaternion vAxis;
   vAxis.MakeRotationQuaternion(m_initUp, m_horizonAngle);
   (vAxis * Quaternion(m_initTarget) * vAxis.Inverse()).GetVector3(m_target);
-  m_target.Unitizate();
+  m_target.Normalize();
   m_initRight = m_initUp.Cross(m_target);
   Quaternion hAxis;
   hAxis.MakeRotationQuaternion(m_initRight, m_verticalAngle);
   (hAxis * Quaternion(m_target) * hAxis.Inverse()).GetVector3(m_target);
-  m_target.Unitizate();
+  m_target.Normalize();
   m_up = m_target.Cross(m_initRight);
   m_right = m_up.Cross(m_target);
 

@@ -1,7 +1,7 @@
 sources_path = ./src/
 objects_path = ./build/
 
-sources = $(wildcard $(sources_path)*.cpp) $(wildcard $(sources_path)*/*.cpp)
+sources = $(wildcard $(sources_path)*.cpp) $(wildcard $(sources_path)*/*.cpp) $(wildcard $(sources_path)*/*/*.cpp)
 cpp_files = $(notdir $(sources))
 objects = $(cpp_files:%.cpp=$(objects_path)%.o)
 targets = ./bin/test

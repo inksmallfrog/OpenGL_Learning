@@ -20,7 +20,7 @@ Vector3f::Vector3f(const Vector3f &vector3f){
   this->z = vector3f.z;
 }
 
-void Vector3f::Unitizate(){
+void Vector3f::Normalize(){
   float distance = sqrtf(x * x + y * y + z * z);
   x /= distance;
   y /= distance;
@@ -95,7 +95,7 @@ Vector3f Vector3f::Cross(const Vector3f &right){
   res.x = y * right.z - z * right.y;
   res.y = -x * right.z + z * right.x;
   res.z = x * right.y - y * right.x;
-  res.Unitizate();
+  res.Normalize();
   return res;
 }
 

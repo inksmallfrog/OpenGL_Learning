@@ -8,6 +8,7 @@
 #include "../includes/glUtil/Pipeline.hpp"
 #include "../includes/glUtil/Camera.hpp"
 #include "../includes/glUtil/Texture.hpp"
+#include "../includes/glUtil/Light.hpp"
 #include "../includes/glUtil/Vertex.hpp"
 #include "../includes/util/Release.hpp"
 
@@ -20,6 +21,8 @@ MyGlutApplication::~MyGlutApplication(){
   SAFE_DELETE(pipeline);
   SAFE_DELETE(shader);
   SAFE_DELETE(texture);
+  SAFE_DELETE(light);
+  SAFE_DELETE(ambientLight);
 
   glDeleteBuffers(1, &IBO);
   glDeleteBuffers(1, &VBO);
@@ -38,14 +41,14 @@ bool MyGlutApplication::Init(){
     exit(0);
   }
   
-  CreateShader();
+  if(!CreateShader()){
+    return false;
+  }
   CreatePipeline();
+  CreateLight();
   CreateTexture();
-  CreateVertexBuffer();
-  CreateIndexBuffer();
+  CreateVertexIndexBuffer();
 
-  PCWModel = shader->GetUniformLocation("PCWModel");
-  
   glutWarpPointer(400, 300);
 
   glEnable(GL_CULL_FACE);
@@ -58,18 +61,24 @@ bool MyGlutApplication::Init(){
 void MyGlutApplication::Display(){
   glClear(GL_COLOR_BUFFER_BIT);
 
-  glUniformMatrix4fv(PCWModel, 1, GL_TRUE, pipeline->GeneratePCW().m_data[0]);
+  pipeline->UsePCW();
   
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid *)0);
+  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
   texture->UseTexture(GL_TEXTURE0);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid *)12);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)12);
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)20);
+  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)32);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-  glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
+  glDisableVertexAttribArray(3);
     
   glutSwapBuffers();
 }
@@ -122,8 +131,8 @@ void MyGlutApplication::CreateWindow(){
 bool MyGlutApplication::CreateShader(){
   shader = new Shader;
   std::vector<std::string> shaders;
-  shaders.push_back("../shader/shader.vs");
-  shaders.push_back("../shader/shader.fs");
+  shaders.push_back("../shader/shader.vert");
+  shaders.push_back("../shader/shader.frag");
   return shader->MakeShader(shaders);
 }
 
@@ -131,6 +140,32 @@ void MyGlutApplication::CreatePipeline(){
   camera = new Camera;
   pipeline = new Pipeline;
   pipeline->DefaultPipeline(camera);
+  pipeline->SetShader(shader);
+}
+
+void MyGlutApplication::CreateLight(){
+  Light::SetCurrentShader(shader);
+
+  float attenuation[] = {
+    1.0f,
+    0.001f,
+    0.0002f
+  };
+
+  SpotLightInfo lightInfo = {
+    Vector3f(0.8f, 0.8f, 0.8f),
+    Vector3f(0.0f, 0.0f, 1.0f),
+    Vector3f(0.0f, 0.0f, 0.0f),
+    1.0f,
+    {1.0f, 0.0f, 0.0f},
+    20.0f
+  };
+  
+  light = new SpotLight(lightInfo);
+  light->UseLight("spotLight");
+
+  ambientLight = new AmbientLight(Vector3f(0.4f, 0.4f, 0.4f));
+  ambientLight->UseLight("ambientLight");
 }
 
 bool MyGlutApplication::CreateTexture(){
@@ -142,30 +177,63 @@ bool MyGlutApplication::CreateTexture(){
   return true;
 }
 
-void MyGlutApplication::CreateVertexBuffer(){
+void MyGlutApplication::CreateVertexIndexBuffer(){
   Vertex vertices[4] = {
-    Vertex(-10.0f, 0.0f, 50.0f, 0.0f, 0.5f),
-    Vertex(0.0f, 0.0f, 70.0f, 0.5f, 1.0f),
-    Vertex(10.0f, 0.0f, 50.0f, 1.0f, 0.0f),
-    Vertex(0.0f, 10.0f, 60.0f, 0.0f, 0.0f)
+    Vertex(Vector3f(-90.0f, -50.0f, 50.0f),
+           Vector2f(0.0f, 1.0f),
+           Vector3f(),
+           0.0f),
+    Vertex(Vector3f(90.0f, -50.0f, 50.0f),
+           Vector2f(1.0f, 1.0f),
+           Vector3f(),
+           0.0f),
+    Vertex(Vector3f(90.0f, 50.0f, 50.0f),
+           Vector2f(1.0f, 0.0f),
+           Vector3f(),
+           0.0f),
+    Vertex(Vector3f(-90.0f, 50.0f, 50.0f),
+           Vector2f(0.0f, 0.0f),
+           Vector3f(),
+           0.0f),
   };
-
+  GLuint indices[] = {
+    0, 1, 3,
+    3, 1, 2
+  };
+  CalculateNormal(vertices, sizeof(vertices) / sizeof(vertices[0]), indices, sizeof(indices) / sizeof(indices[0]));
+  
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-}
-
-void MyGlutApplication::CreateIndexBuffer(){
-  GLuint indices[12] = {
-    0, 1, 2,
-    1, 0, 3,
-    2, 1, 3,
-    3, 0, 2
-  };
 
   glGenBuffers(1, &IBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+}
+
+void MyGlutApplication::CalculateNormal(Vertex *vertexs, int vNumber, uint *indices, int iNumber){
+  for(int i = 0; i < iNumber; i += 3){
+    Vector3f p[3] = {
+      vertexs[indices[i]].GetPosition(),
+      vertexs[indices[i + 1]].GetPosition(),
+      vertexs[indices[i + 2]].GetPosition()
+    };
+    Vector3f n[3] = {
+      vertexs[indices[i]].GetNormal(),
+      vertexs[indices[i + 1]].GetNormal(),
+      vertexs[indices[i + 2]].GetNormal()
+    };
+
+    Vector3f normal = (p[1] - p[2]).Cross(p[0] - p[1]);
+
+    for(int j = 0; j < 3; ++j){
+      vertexs[indices[i + j]].SetNormal(n[j] + normal);
+    }
+  }
+
+  for(int i = 0; i < vNumber; ++i){
+    vertexs[i].NormalizeNormal();
+  }
 }
 
 int main(int argc, char **argv){

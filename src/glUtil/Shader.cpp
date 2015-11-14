@@ -55,20 +55,50 @@ void Shader::UseShader(){
   glUseProgram(m_shaderProgram);
 }
 
-GLuint Shader::GetUniformLocation(const char* variableName){
+const GLuint Shader::GetUniformLocation(const char* variableName)const{
   return glGetUniformLocation(m_shaderProgram, variableName);
 }
 
-/*GLuint Shader::GetUniformBlockLocation(const char* blockName){
-  return glGetUniformBlockIndex(m_shaderProgram, blockName);
-  }*/
+const bool Shader::SetUniform1f(const std::string variableName, float x)const{
+  GLuint uniformVariable = glGetUniformLocation(m_shaderProgram, variableName.c_str());
+  if(GL_INVALID_INDEX == uniformVariable){
+    std::cout << "Can't get the uniform named " << variableName << std::endl;
+    return false;
+  }
 
-bool Shader::IsShaderLoaded(const std::string &shaderName){
+  glUniform1f(uniformVariable, x);
+  return true;
+}
+
+const bool Shader::SetUniform3f(const std::string variableName, float x, float y, float z)const{
+  GLuint uniformVariable = glGetUniformLocation(m_shaderProgram, variableName.c_str());
+  if(GL_INVALID_INDEX == uniformVariable){
+    std::cout << "Can't get the uniform named " << variableName << std::endl;
+    return false;
+  }
+
+  glUniform3f(uniformVariable, x, y, z);
+  return true;
+}
+
+const bool Shader::SetUniformBlockIndex(const char* blockName, GLuint buffer)const{
+  GLuint blockLocation = glGetUniformBlockIndex(m_shaderProgram, blockName);
+  if(GL_INVALID_INDEX == blockLocation){
+    std::cout << "Can't get the block named " << blockName << std::endl;
+    return false;
+  }
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, blockLocation, buffer);
+  
+  return true;
+}
+
+const bool Shader::IsShaderLoaded(const std::string &shaderName)const{
   //  return m_loadedShaders.
   return true;
 }
 
-bool Shader::CompileShader(const std::string &fileName){
+const bool Shader::CompileShader(const std::string &fileName){
   GLenum type = CheckShaderType(fileName);
   assert(type != GL_ZERO);
   GLuint shader = glCreateShader(type);
@@ -122,11 +152,11 @@ int Shader::LoadShader(const std::string &fileName, std::string &content){
 }
 
 GLenum Shader::CheckShaderType(const std::string &fileName){
-  if(fileName.find(".vs") != -1){
+  if(fileName.find(".vert") != -1){
     return GL_VERTEX_SHADER;
   }
 
-  if(fileName.find(".fs") != -1){
+  if(fileName.find(".frag") != -1){
     return GL_FRAGMENT_SHADER;
   }
 

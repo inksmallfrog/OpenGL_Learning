@@ -3,7 +3,9 @@
 
 #include "../math/Vector3.hpp"
 #include "../math/Matrix4.hpp"
+#include <GL/glut.h>
 class Camera;
+class Shader;
 
 struct World{
   Vector3f transfer;
@@ -44,21 +46,33 @@ class Pipeline{
   void SetPerspectiveZfar(float zFar);
   const Matrix4f& GeneratePerspective();
 
-  const Matrix4f GeneratePCW();
-  const Matrix4f GeneratePW();
-  const Matrix4f GenerateCW();
-  const Matrix4f GeneratePC();
+  const Matrix4f UsePCW();
+  const Matrix4f UsePW();
+  const Matrix4f UseCW();
+  const Matrix4f UsePC();
+
+  void SetUniformWorld();
+  void SetUniformCameraPosition();
+
+  void SetShader(const Shader *shader);
   
  private:
-  Matrix4f m_matrixWorld;
-  Matrix4f m_matrixCamera;
-  Matrix4f m_matrixPerspective;
   Matrix4f m_PCWModel;
   bool m_PCWdirty;
+  GLuint m_PipelineModelLocation;
   
   World m_world;
+  Matrix4f m_matrixWorld;
+  GLuint m_WorldLocation;
+  
   Camera *m_camera;
+  Matrix4f m_matrixCamera;
+  GLuint m_CameraPositionLocation;
+  
   Perspective m_perspective;
+  Matrix4f m_matrixPerspective;
+
+  const Shader* m_shader;
 };
 
 #endif

@@ -19,12 +19,11 @@ class Camera{
   void MoveCamera(Direction direction);
   void RotateCamera(int mouseX, int mouseY);
 
-  const Vector3f& getPosition()const;
-  const Vector3f& getUp()const;
-  const Vector3f& getTarget()const;
-  const float getVerticalAngle()const;
-  const float getHorizentalAngle()const;
-  void setRightVector3(const Vector3f& right);
+  const Vector3f& GetPosition()const;
+  const Vector3f& GetUp()const;
+  const Vector3f& GetTarget()const;
+  const float GetVerticalAngle()const;
+  const float GetHorizentalAngle()const;
   
   Matrix4f GenerateMatrix(bool &outSucceed);
   

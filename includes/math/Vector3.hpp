@@ -6,7 +6,7 @@ class Vector3f{
   Vector3f();
   Vector3f(float x, float y, float z);
   Vector3f(const Vector3f &vector3f);
-  void Unitizate();
+  void Normalize();
   Vector3f operator=(const Vector3f &right);
   Vector3f operator+(const Vector3f &right);
   Vector3f operator+=(const Vector3f &right);

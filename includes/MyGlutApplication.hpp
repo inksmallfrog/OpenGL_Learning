@@ -6,6 +6,8 @@ class Shader;
 class Pipeline;
 class Camera;
 class Texture;
+class Light;
+class Vertex;
 
 #include "./glut/IGlutApplication.hpp"
 #include <GL/glut.h>
@@ -30,14 +32,16 @@ class MyGlutApplication : public IGlutApplication{
   void CreateWindow();
   bool CreateShader();
   void CreatePipeline();
+  void CreateLight();
   bool CreateTexture();
-  void CreateVertexBuffer();
-  void CreateIndexBuffer();
+  void CreateVertexIndexBuffer();
+  void CalculateNormal(Vertex *vertexs, int vNumber, uint *indices, int iNumber);
   
   GLuint VBO;
   GLuint IBO;
-  GLuint PCWModel;
   GLuint textureSampler;
+  Light *light;
+  Light *ambientLight;
   Texture *texture;
   Shader *shader;
   Pipeline *pipeline;

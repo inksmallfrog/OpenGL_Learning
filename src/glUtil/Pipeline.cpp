@@ -1,5 +1,7 @@
+#include <GL/glew.h>
 #include "../../includes/glUtil/Pipeline.hpp"
 #include "../../includes/glUtil/Camera.hpp"
+#include "../../includes/glUtil/Shader.hpp"
 
 Pipeline::Pipeline(){  
   m_world.dirty = true;
@@ -120,32 +122,49 @@ const Matrix4f& Pipeline::GeneratePerspective(){
   return m_matrixPerspective;
 }
 
-const Matrix4f Pipeline::GeneratePCW(){
+const Matrix4f Pipeline::UsePCW(){
   GeneratePerspective();
   GenerateCamera();
   GenerateWorld();
   if(m_PCWdirty){
     m_PCWModel = m_matrixPerspective * m_matrixCamera * m_matrixWorld;
+    glUniformMatrix4fv(m_PipelineModelLocation, 1, GL_TRUE, m_PCWModel.m_data[0]);
+    SetUniformWorld();
+    SetUniformCameraPosition();
   }
   return m_PCWModel;
 }
 
-const Matrix4f Pipeline::GeneratePW(){
+const Matrix4f Pipeline::UsePW(){
   GeneratePerspective();
   GenerateWorld();
   return m_matrixPerspective * m_matrixWorld;
 }
 
-const Matrix4f Pipeline::GenerateCW(){
+const Matrix4f Pipeline::UseCW(){
   GenerateCamera();
   GenerateWorld();
   return m_matrixCamera * m_matrixWorld;
 }
 
-const Matrix4f Pipeline::GeneratePC(){
+const Matrix4f Pipeline::UsePC(){
   GeneratePerspective();
   GenerateCamera();
   return m_matrixPerspective * m_matrixCamera;
 }
 
+void Pipeline::SetUniformWorld(){
+  glUniformMatrix4fv(m_WorldLocation, 1, GL_TRUE, m_matrixWorld.m_data[0]);
+}
 
+void Pipeline::SetUniformCameraPosition(){
+  Vector3f position = m_camera->GetPosition();
+  glUniform3f(m_CameraPositionLocation, position.x, position.y, position.z);
+}
+
+void Pipeline::SetShader(const Shader *shader){
+  m_shader = shader;
+  m_PipelineModelLocation = m_shader->GetUniformLocation("pipelineModel");
+  m_WorldLocation = m_shader->GetUniformLocation("worldModel");
+  m_CameraPositionLocation = m_shader->GetUniformLocation("cameraPosition");
+}
