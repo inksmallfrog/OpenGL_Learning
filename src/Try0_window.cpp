@@ -161,11 +161,8 @@ void MyGlutApplication::CreateLight(){
     20.0f
   };
   
-  light = new SpotLight(lightInfo);
-  light->UseLight("spotLight");
-
-  ambientLight = new AmbientLight(Vector3f(0.4f, 0.4f, 0.4f));
-  ambientLight->UseLight("ambientLight");
+  light = new PointLight(Vector3f(0.4f, 0.4f, 0.4f), Vector3f(0.0f, 0.0f, 0.0f), 1.0f, attenuation);
+  light->UseLight("pointLight");
 }
 
 bool MyGlutApplication::CreateTexture(){
@@ -182,19 +179,19 @@ void MyGlutApplication::CreateVertexIndexBuffer(){
     Vertex(Vector3f(-90.0f, -50.0f, 50.0f),
            Vector2f(0.0f, 1.0f),
            Vector3f(),
-           0.0f),
+           32.0f),
     Vertex(Vector3f(90.0f, -50.0f, 50.0f),
            Vector2f(1.0f, 1.0f),
            Vector3f(),
-           0.0f),
+           1.0f),
     Vertex(Vector3f(90.0f, 50.0f, 50.0f),
            Vector2f(1.0f, 0.0f),
            Vector3f(),
-           0.0f),
+           10.0f),
     Vertex(Vector3f(-90.0f, 50.0f, 50.0f),
            Vector2f(0.0f, 0.0f),
            Vector3f(),
-           0.0f),
+           15.0f),
   };
   GLuint indices[] = {
     0, 1, 3,

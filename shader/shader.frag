@@ -31,8 +31,7 @@ struct SpotLight{
   float[3] attenuations;
   float borderCos;
 };
-uniform AmbientLight ambientLight;
-uniform SpotLight spotLight;
+uniform PointLight pointLight;
 
 vec3 CalculateDirectionLight(DirectionLight _directionLight);
 vec3 CalculateDirection(vec3 ambientColor, vec3 direction, float diffuseIntensity);
@@ -42,7 +41,7 @@ vec3 CalculateSpotLight(SpotLight _spotLight);
 
 
 void main(){
-  Color = vec4(vec3(texture2D(textureSampler, textureCoord.st)) * (CalculateSpotLight(spotLight) + ambientLight.ambientColor), 1.0);
+  Color = vec4(vec3(texture2D(textureSampler, textureCoord.st)) * CalculatePointLight(pointLight), 1.0);
 }
 
 vec3 CalculateDirectionLight(DirectionLight _directionLight){
